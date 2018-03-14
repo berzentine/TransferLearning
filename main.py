@@ -1,6 +1,6 @@
-from FeatureExtractor import BiLSTMEncoder
-from LabelClassifier import CNN_Text
-from DomainClassifier import LogisticRegression
+from EventClassification.EventClassifier import CNN_Text
+from EventClassification.RelevanceClassifier import LogisticRegression
+from Models.PrivateEncoderSource import BiLSTMEncoder
 import torchwordemb
 import math
 import time
@@ -44,31 +44,141 @@ model_save_path = args.model_save_path
 lr = args.lr
 clip = args.clip
 log_interval = args.log_interval
-vocab_size = 1000
-# TODO
+vocab_size = 1000 # TODO # handle data and reasign vocab size
 
 
-# handle data and reasign vocab size
+def plot(train_losses, val_losses, save):
+    """ Plots the loss curves """
+    df = pd.DataFrame({"Train":train_losses, "Val":val_losses},columns=["Train","Val"])
+    df["Epochs"] = df.index
+    var_name = "Loss Type"
+    value_name = "Loss"
+    df = pd.melt(df, id_vars=["Epochs"], value_vars=["Train", "Val"], var_name=var_name, value_name=value_name)
+    sns.tsplot(df, time="Epochs", unit=var_name, condition=var_name, value=value_name)
+    matplotlib.pyplot.savefig(save, bbox_inches="tight")
 
-model = BiLSTMEncoder(vocab_size=vocab_size, embed_size=emb_size, num_layers=num_layers, hidden_size=hidden_size)
-if args.cuda:
-    model.cuda()
+##################################################
+# Batchify and Handle Data
+##################################################
+def batchify():
+    return 0
+
+def repackage_hidden(h):
+    """Wraps hidden states in new Variables, to detach them from their history."""
+    if type(h) == Variable:
+        return Variable(h.data)
+    else:
+        return tuple(repackage_hidden(v) for v in h)
+
+##################################################
+# Train and Evaluate the model
+##################################################
+
+
+def train(train_data):
+    model.train()
+    hidden = model.init_hidden(num_layers, data_batch_size, hidden_size)
+
+    total_loss = 0
+    total_avg_loss = 0
+    total_words = 0
+    batch_loss = 0
+    batch_words = 0
+    batch_count = 0
+    start_time = time.time()
+    for i, data in enumerate(train_data, 0):
+
+
+    ############################
+    # (1) Update Lsim
+    ############################
+    ############################
+    # (2) Update Ldiff
+    ############################
+    ############################
+    # (3) Update Lrec
+    ############################
+    ############################
+    # (4) Update Lrel
+    ############################
+    ############################
+    # (5) Update Lclass
+    ############################
+
+
+    return 0
+
+def evaluate(data, data_length):
+    return 0
+
+
+model_pt = (hidden_size, num_layers, vec, vocab_size, embed_size) # private target
+# intializie the weights as netG.apply(weights_init) for all models
+model_ps = (hidden_size, num_layers, vec, vocab_size, embed_size) # private source
+model_s = (hidden_size, num_layers, vec, vocab_size, embed_size) # encoder shared
+model_d = (hidden_size, num_layers, vec, vocab_size, embed_size) # decoder
+model_rc = (hidden_size, num_layers, vec, vocab_size, embed_size) # rel classifier
+model_fc = (hidden_size, num_layers, vec, vocab_size, embed_size) # final classifier
+## setup criterion like this = nn.BCELoss()
+# # setup optimizer
+
+# TODO: if cude then do CUDA for
+"""
+if opt.cuda:
+    netD.cuda()
+    netG.cuda()
+    criterion.cuda()
+    input, label = input.cuda(), label.cuda()
+    noise, fixed_noise = noise.cuda(), fixed_noise.cuda()
+    LIKE THIS
+
+    model = BiLSTMEncoder(vocab_size=vocab_size, embed_size=emb_size, num_layers=num_layers, hidden_size=hidden_size)
+    if args.cuda:
+        model.cuda()
+"""
+
+best_val_loss = None
+val_losses = []
+try:
+    for epoch in range(1, total_epochs+1):
+        epoch_start_time = time.time()
+        train(train_data)
+        val_loss = evaluate(val_data, val_lengths)
+        val_losses.append(val_loss)
+        print('-' * 89)
+        print('| end of epoch {:3d} | time: {:5.2f}s | valid loss {:5.2f} | '.format(epoch, (time.time() - epoch_start_time),val_loss))
+        print('-' * 89)
+        #exit(0)
+        # Save the model if the validation loss is the best we've seen so far.
+        if not best_val_loss or val_loss < best_val_loss:
+            with open(model_save_path, 'wb') as f:
+                torch.save(model, f)
+            best_val_loss = val_loss
+        else:
+            # Anneal the learning rate if no improvement has been seen in the validation dataset.
+            lr /= 2
+except KeyboardInterrupt:
+    print('-' * 89)
+    print('Exiting from training early')
+plot(train_losses, val_losses, plot_save_path)
+# Load the best saved model.
+with open(model_save_path, 'rb') as f:
+    model = torch.load(f)
+# Run on test data.
+test_loss = evaluate(test_data, test_lengths)
+print('=' * 89)
+print('| End of training | test loss {:5.2f} | '.format(test_loss))
+print('=' * 89)
+
 
 # Train
 """
 m = LogisticRegression(input_size=emb_size, num_classes=2)
-a = torch.FloatTensor(emb_size)
 print m.forward(Variable(a))
 m = CNN_Text(emb_size, vocab_size, dropout) # image_# x n_channel x width x height
 a = torch.FloatTensor(32,10,emb_size)   # N X W X D
 print m.forward(Variable(a))
 """
-
-# train and evaluate the model
-
-# dataloader make, for now, just let it be random data
-
-
 
 
 print 'done'

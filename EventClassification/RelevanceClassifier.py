@@ -9,6 +9,8 @@ class LogisticRegression(nn.Module):
         super(LogisticRegression, self).__init__()
         self.linear = nn.Linear(input_size, num_classes)
 
+    # num_classes = 0/1 0 if no keywords are present else 1    
+
     def forward(self, x):
         out = self.linear(x)
         return out
